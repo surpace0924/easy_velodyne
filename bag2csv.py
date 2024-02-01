@@ -54,11 +54,40 @@ def main():
 
     # プロット
     fig = plt.figure()
+    # 余白
+    plt.subplots_adjust(left=0.01, right=0.99, bottom=0.01, top=0.99)
+    plt.rcParams['font.family'] = 'Times New Roman'
+    plt.rcParams['mathtext.fontset'] = 'stix'
+    plt.rcParams['font.size'] = 14
+    plt.rcParams['xtick.direction'] = 'in'
+    plt.rcParams['ytick.direction'] = 'in'
+    plt.rcParams['axes.linewidth'] = 1.0
+    plt.rcParams['axes.grid'] = True
+    plt.rcParams['grid.linestyle'] = '--'
+    plt.rcParams['grid.linewidth'] = 0.3
+    # plt.rcParams['legend.frameon'] = False
+    # plt.rcParams['legend.loc'] = 'lower right'
+    plt.rcParams['legend.fontsize'] = 10
+    plt.rcParams['legend.handlelength'] = 1.0
+    plt.rcParams['legend.labelspacing'] = 0.5
+    plt.rcParams['figure.figsize'] = [6.5, 4.8]
+    plt.rcParams['figure.dpi'] = 200
+    plt.rcParams['figure.subplot.left'] = 0.1
+    plt.rcParams['figure.subplot.bottom'] = 0.12
+    plt.rcParams['figure.subplot.right'] = 0.95
+    plt.rcParams['figure.subplot.top'] = 0.95
+    
+
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(points[:, 0], points[:, 1], points[:, 2], s=1)
-    ax.set_xlabel('x')
-    ax.set_ylabel('y')
-    ax.set_zlabel('z')
+    ax.set_xlabel('X [m]')
+    ax.set_ylabel('Y [m]')
+    ax.set_zlabel('Z [m]')
+    
+    # 視点
+    ax.view_init(elev=0)
+    ax.view_init(azim=180+45)
+
     plt.show()
 
     # ファイル出力
