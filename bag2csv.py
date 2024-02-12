@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-import rosbag
-import numpy as np
-import matplotlib.pyplot as plt
-import sys
+
+'''
+sample code to extract point cloud from rosbag file and save it as csv file.
+'''
+
 import os
-import rospy
-import sensor_msgs.point_cloud2 as pc2
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
+import rosbag
+import sensor_msgs.point_cloud2 as pc2
 
 # detastructure
 # https://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/PointCloud2.html
@@ -14,7 +18,10 @@ import pandas as pd
 def main():
     ###### param ######
     # レコードファイルのパス
-    bag_filepath = '2024-01-08-11-06-21.bag'
+    bag_filepath = os.path.join('assets', '2024-01-08-11-06-21.bag')
+
+    # 出力ファイルのパス
+    csv_filepath = os.path.join('assets', 'points.csv')
     
     # トピック名
     topic_name = '/velodyne_points'
@@ -22,7 +29,7 @@ def main():
     # 取り出す時刻（レコード開始時刻からの経過秒数）
     extract_time = 30.0
 
-    # 取り出す空間範囲
+    # 取り出す空間範囲（原点から半径何[m]抽出するか）
     extract_range = 3.0
     ###################
 
@@ -53,8 +60,27 @@ def main():
     points = points[np.linalg.norm(points, axis=1) < extract_range]
 
     # プロット
+    plot_points(points)
+
+    # ファイル出力
+    df = pd.DataFrame(points, columns=['x', 'y', 'z'])
+    df.to_csv(csv_filepath, index=False)
+
+
+# PointCloud2メッセージをnumpy配列に変換
+# @param msg: PointCloud2メッセージ
+def pointcloud2xyz(msg):
+    pc_data = pc2.read_points(msg, field_names=("x", "y", "z"), skip_nans=True)
+    pc_array = np.array(list(pc_data))
+    return pc_array
+
+
+# 点群をプロット
+# @param points: 点群（N×3のnumpy配列）
+def plot_points(points):
     fig = plt.figure()
-    # 余白
+    
+    # 設定
     plt.subplots_adjust(left=0.01, right=0.99, bottom=0.01, top=0.99)
     plt.rcParams['font.family'] = 'Times New Roman'
     plt.rcParams['mathtext.fontset'] = 'stix'
@@ -65,8 +91,6 @@ def main():
     plt.rcParams['axes.grid'] = True
     plt.rcParams['grid.linestyle'] = '--'
     plt.rcParams['grid.linewidth'] = 0.3
-    # plt.rcParams['legend.frameon'] = False
-    # plt.rcParams['legend.loc'] = 'lower right'
     plt.rcParams['legend.fontsize'] = 10
     plt.rcParams['legend.handlelength'] = 1.0
     plt.rcParams['legend.labelspacing'] = 0.5
@@ -76,8 +100,8 @@ def main():
     plt.rcParams['figure.subplot.bottom'] = 0.12
     plt.rcParams['figure.subplot.right'] = 0.95
     plt.rcParams['figure.subplot.top'] = 0.95
-    
 
+    # 3Dプロット
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(points[:, 0], points[:, 1], points[:, 2], s=1)
     ax.set_xlabel('X [m]')
@@ -89,17 +113,6 @@ def main():
     ax.view_init(azim=180+45)
 
     plt.show()
-
-    # ファイル出力
-    df = pd.DataFrame(points, columns=['x', 'y', 'z'])
-    df.to_csv('points.csv', index=False)
-
-
-# PointCloud2メッセージをnumpy配列に変換
-def pointcloud2xyz(msg):
-    pc_data = pc2.read_points(msg, field_names=("x", "y", "z"), skip_nans=True)
-    pc_array = np.array(list(pc_data))
-    return pc_array
 
     
 if __name__ == '__main__':
